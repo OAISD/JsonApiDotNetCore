@@ -44,7 +44,7 @@ namespace JsonApiDotNetCore.Builders
             };
 
             if (ShouldIncludePageLinks(contextEntity))
-                document.Links = _jsonApiContext.PageManager.GetPageLinks(new LinkBuilder(_jsonApiContext));
+                document.Links = _jsonApiContext.PageManager.GetPageLinks(_jsonApiContext);
 
             document.Included = AppendIncludedObject(document.Included, contextEntity, entity);
 
@@ -66,7 +66,7 @@ namespace JsonApiDotNetCore.Builders
             };
 
             if (ShouldIncludePageLinks(contextEntity))
-                documents.Links = _jsonApiContext.PageManager.GetPageLinks(new LinkBuilder(_jsonApiContext));
+                documents.Links = _jsonApiContext.PageManager.GetPageLinks(_jsonApiContext);
 
             foreach (var entity in enumeratedEntities)
             {
@@ -171,18 +171,18 @@ namespace JsonApiDotNetCore.Builders
 
         private RelationshipData GetRelationshipData(RelationshipAttribute attr, ContextEntity contextEntity, IIdentifiable entity)
         {
-            var linkBuilder = new LinkBuilder(_jsonApiContext);
-
+            var linkBuilder = _jsonApiContext.LinkBuilder; 
+            var basePath = _jsonApiContext.BasePath;
             var relationshipData = new RelationshipData();
 
             if (_jsonApiContext.Options.DefaultRelationshipLinks.HasFlag(Link.None) == false && attr.DocumentLinks.HasFlag(Link.None) == false)
             {
                 relationshipData.Links = new Links();
                 if (attr.DocumentLinks.HasFlag(Link.Self))
-                    relationshipData.Links.Self = linkBuilder.GetSelfRelationLink(contextEntity.EntityName, entity.StringId, attr.PublicRelationshipName);
+                    relationshipData.Links.Self = linkBuilder.GetSelfRelationLink(basePath, contextEntity.EntityName, entity.StringId, attr.PublicRelationshipName);
 
                 if (attr.DocumentLinks.HasFlag(Link.Related))
-                    relationshipData.Links.Related = linkBuilder.GetRelatedRelationLink(contextEntity.EntityName, entity.StringId, attr.PublicRelationshipName);
+                    relationshipData.Links.Related = linkBuilder.GetRelatedRelationLink(basePath, contextEntity.EntityName, entity.StringId, attr.PublicRelationshipName);
             }
 
             // this only includes the navigation property, we need to actually check the navigation property Id
